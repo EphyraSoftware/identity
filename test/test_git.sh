@@ -12,21 +12,25 @@ version = "1.0"
 
 [[identity]]
 id = "tester"
+user = "tester"
 email = "tester@example.com"
 match_url = "https://github.com/tester/*"
 
 [[identity]]
 id = "tinkerer"
+user = "tinkerer"
 email = "tinkerer@example.com"
 match_url = "https://github.com/tinkerer/*"
 
 [[identity]]
 id = "duplicator1"
+user = "duplicator1"
 email = "duplicator1@example.com"
 match_url = "https://github.com/duplicator/*"
 
 [[identity]]
 id = "duplicator2"
+user = "duplicator2"
 email = "duplicator2@example.com"
 match_url = "https://github.com/duplicator/*"
 END

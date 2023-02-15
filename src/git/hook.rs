@@ -38,10 +38,10 @@ pub fn run_git_pre_commit_hook() -> anyhow::Result<()> {
     }
 
     let identity = candidate_identities.first().unwrap();
-    if identity.id != username {
+    if identity.user != username {
         eprintln!(
             "Username mismatch - expected={} != actual={}",
-            identity.id, username
+            identity.user, username
         );
         exit(1);
     }

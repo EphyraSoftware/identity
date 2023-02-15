@@ -39,8 +39,8 @@ pub fn get_pre_commit_hook_path() -> anyhow::Result<PathBuf> {
             .output()?
             .stdout,
     )?
-        .trim_end()
-        .to_string();
+    .trim_end()
+    .to_string();
 
     if git_root == "" {
         return Err(anyhow!("Not in a Git repository"));

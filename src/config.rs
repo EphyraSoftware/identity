@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use std::fs::{create_dir, File};
@@ -22,6 +23,7 @@ impl Config {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IdentityConfig {
     pub id: String,
+    pub user: String,
     pub email: Option<String>,
     pub match_url: Option<String>,
     pub description: Option<String>,
@@ -81,6 +83,15 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
         .with_context(|| format!("Failed to create default config file content"))?;
     f.write_all(content.as_bytes())
         .with_context(|| format!("Failed to write default content to new config file"))?;
+
+    Ok(())
+}
+
+pub fn verify_config(cfg: &Config) -> anyhow::Result<()> {
+    let unique_ids: HashSet<&str> = cfg.identity.iter().map(|ic| ic.id.as_str()).collect();
+    if unique_ids.len() != cfg.identity.len() {
+        return Err(anyhow!("Identities must have a unique id"))
+    }
 
     Ok(())
 }
