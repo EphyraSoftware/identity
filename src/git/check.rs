@@ -1,7 +1,10 @@
+use std::fs::File;
+use std::io::Read;
 use crate::git::hook::run_git_pre_commit_hook;
 use anyhow::{anyhow, Context};
 use regex::Regex;
 use std::process::Command;
+use crate::git::install::get_pre_commit_hook_path;
 
 pub fn run_git_check() -> anyhow::Result<()> {
     let git_version = check_git().with_context(|| "Git not found")?;
@@ -17,9 +20,23 @@ pub fn run_git_check() -> anyhow::Result<()> {
         return Err(anyhow!("No credentials helper configured"));
     }
 
+    check_hook_content()?;
+
     run_git_pre_commit_hook()?;
 
     println!("Everything looks good!");
+
+    Ok(())
+}
+
+fn check_hook_content() -> anyhow::Result<()> {
+    let pre_commit_hook_path = get_pre_commit_hook_path()?;
+    let mut f = File::open(&pre_commit_hook_path).with_context(|| "Pre-commit hook not found")?;
+    let mut content = String::new();
+    f.read_to_string(&mut content).with_context(|| format!("Failed to read pre-commit hook - {:?}", pre_commit_hook_path))?;
+    if !content.contains("identity git --pre-commit-hook") {
+        return Err(anyhow!("Pre-commit hook does not contain an identity check"));
+    }
 
     Ok(())
 }
