@@ -9,8 +9,7 @@ fn main() -> anyhow::Result<()> {
     let matches = cli::configure_cli().get_matches();
 
     if matches.get_flag("verify") {
-        let cfg = config::load_config()?;
-        println!("config {:?}", cfg);
+        config::load_config()?;
         return Ok(());
     }
 
