@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 
-const PRE_COMMIT_HOOK: &'static str = r#"#!/usr/bin/env bash
+const PRE_COMMIT_HOOK: &str = r#"#!/usr/bin/env bash
 identity git --pre-commit-hook
 "#;
 
@@ -42,7 +42,7 @@ pub fn get_pre_commit_hook_path() -> anyhow::Result<PathBuf> {
     .trim_end()
     .to_string();
 
-    if git_root == "" {
+    if git_root.is_empty() {
         return Err(anyhow!("Not in a Git repository"));
     }
 

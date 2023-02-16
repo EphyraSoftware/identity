@@ -34,7 +34,7 @@ impl IdentityConfig {
     pub fn matches_url(&self, url: &str) -> bool {
         match &self.match_url {
             Some(match_url) => {
-                if match_url.ends_with("*") {
+                if match_url.ends_with('*') {
                     let mut url_prefix = match_url.clone();
                     url_prefix.pop();
 
@@ -56,7 +56,7 @@ pub fn load_config() -> anyhow::Result<Config> {
 
     let mut content = String::new();
     f.read_to_string(&mut content)?;
-    Ok(toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")?)
+    toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")
 }
 
 pub fn update_config<F>(change: F) -> anyhow::Result<Config>
@@ -110,9 +110,9 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
         identity: vec![],
     };
     let content = toml::to_string(&new_config)
-        .with_context(|| format!("Failed to create default config file content"))?;
+        .with_context(|| format!("Failed to create default config file content - {:?}", config_path))?;
     f.write_all(content.as_bytes())
-        .with_context(|| format!("Failed to write default content to new config file"))?;
+        .with_context(|| format!("Failed to write default content to new config file - {:?}", config_path))?;
 
     Ok(())
 }

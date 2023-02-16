@@ -16,7 +16,7 @@ pub fn run_git_check() -> anyhow::Result<()> {
     }
 
     let credentials_helper = check_credentials_helper()?;
-    if credentials_helper == "" {
+    if credentials_helper.is_empty() {
         return Err(anyhow!("No credentials helper configured"));
     }
 
