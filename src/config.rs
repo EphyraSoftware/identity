@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::fs::{create_dir, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -8,6 +8,7 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub version: String,
+    pub current_identity: Option<String>,
     pub identity: Vec<IdentityConfig>,
 }
 
@@ -48,6 +49,39 @@ impl IdentityConfig {
 }
 
 pub fn load_config() -> anyhow::Result<Config> {
+    let config_path = get_config_path()?;
+
+    let mut f = File::open(&config_path)
+        .with_context(|| format!("Failed to open config at - {:?}", config_path))?;
+
+    let mut content = String::new();
+    f.read_to_string(&mut content)?;
+    Ok(toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")?)
+}
+
+pub fn update_config<F>(change: F) -> anyhow::Result<Config>
+where
+    F: Fn(Config) -> anyhow::Result<Config>,
+{
+    let config_path = get_config_path()?;
+
+    let mut f = File::open(&config_path)
+        .with_context(|| format!("Failed to open config at - {:?}", config_path))?;
+
+    let mut content = String::new();
+    f.read_to_string(&mut content)?;
+    let config =
+        toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")?;
+
+    let updated_config = change(config)?;
+
+    let mut f = File::create(&config_path)?;
+    f.write_all(toml::to_string(&updated_config)?.as_bytes())?;
+
+    Ok(updated_config)
+}
+
+fn get_config_path() -> anyhow::Result<PathBuf> {
     let home_path = match home::home_dir() {
         Some(p) => p,
         None => return Err(anyhow!("Unable to find your home directory")),
@@ -64,12 +98,7 @@ pub fn load_config() -> anyhow::Result<Config> {
         create_default_config(&config_path)?;
     }
 
-    let mut f = File::open(&config_path)
-        .with_context(|| format!("Failed to open config at - {:?}", config_path))?;
-
-    let mut content = String::new();
-    f.read_to_string(&mut content)?;
-    Ok(toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")?)
+    Ok(config_path)
 }
 
 fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
@@ -77,6 +106,7 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
         .with_context(|| format!("Failed to open config at - {:?}", config_path))?;
     let new_config = Config {
         version: "1.0".to_string(),
+        current_identity: None,
         identity: vec![],
     };
     let content = toml::to_string(&new_config)
@@ -90,7 +120,7 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
 pub fn verify_config(cfg: &Config) -> anyhow::Result<()> {
     let unique_ids: HashSet<&str> = cfg.identity.iter().map(|ic| ic.id.as_str()).collect();
     if unique_ids.len() != cfg.identity.len() {
-        return Err(anyhow!("Identities must have a unique id"))
+        return Err(anyhow!("Identities must have a unique id"));
     }
 
     Ok(())

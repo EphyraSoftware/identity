@@ -1,4 +1,4 @@
-use crate::config::{load_config, IdentityConfig};
+use crate::config::{load_config, update_config, IdentityConfig};
 use clap::{ArgMatches, Command};
 use inquire::Select;
 use std::fmt::{Display, Formatter};
@@ -11,7 +11,12 @@ pub fn run_switch(_: &ArgMatches) -> anyhow::Result<()> {
     let cfg = load_config()?;
 
     let selector = Select::new("Select identity", cfg.identity);
-    selector.prompt()?;
+    let identity = selector.prompt()?;
+
+    update_config(move |mut cfg| {
+        cfg.current_identity = Some(identity.id.clone());
+        Ok(cfg)
+    })?;
 
     Ok(())
 }
