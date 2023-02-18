@@ -11,3 +11,4 @@ inquire = "0.5.3"
 regex = "1"
 serde = { version = "1", features = ["derive"] }
 toml = "0.7.2"
+url = "2"

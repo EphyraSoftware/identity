@@ -1,4 +1,5 @@
 use crate::config::load_config;
+use crate::git::common::get_origin_url;
 use std::process::{exit, Command};
 
 pub fn run_git_pre_commit_hook() -> anyhow::Result<()> {
@@ -22,14 +23,7 @@ pub fn run_git_pre_commit_hook() -> anyhow::Result<()> {
     .trim_end()
     .to_string();
 
-    let origin = String::from_utf8(
-        Command::new("git")
-            .args(["remote", "get-url", "--push", "origin"])
-            .output()?
-            .stdout,
-    )?
-    .trim_end()
-    .to_string();
+    let origin = get_origin_url()?;
 
     let candidate_identities = config.identities_for_url(origin.as_str());
     if candidate_identities.len() != 1 {

@@ -1,4 +1,6 @@
+use crate::config::load_config;
 use crate::git::check::run_git_check;
+use crate::git::credentials::get_current_credential;
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::run_git_install;
 use anyhow::anyhow;

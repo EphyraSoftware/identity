@@ -1,3 +1,4 @@
+use crate::git::common::get_credentials_helper;
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::get_pre_commit_hook_path;
 use anyhow::{anyhow, Context};
@@ -15,8 +16,7 @@ pub fn run_git_check() -> anyhow::Result<()> {
         return Err(anyhow!("Unsupported Git version - {}", git_version));
     }
 
-    let credentials_helper = check_credentials_helper()?;
-    if credentials_helper.is_empty() {
+    if get_credentials_helper()?.is_empty() {
         return Err(anyhow!("No credentials helper configured"));
     }
 
@@ -63,13 +63,4 @@ fn check_git_version(version: &str) -> anyhow::Result<bool> {
     } else {
         Ok(false)
     }
-}
-
-fn check_credentials_helper() -> anyhow::Result<String> {
-    Ok(String::from_utf8(
-        Command::new("git")
-            .args(["config", "--global", "credential.helper"])
-            .output()?
-            .stdout,
-    )?)
 }

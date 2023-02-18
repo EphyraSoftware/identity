@@ -19,6 +19,23 @@ impl Config {
             .filter(|ic| ic.matches_url(url))
             .collect()
     }
+
+    pub fn get_current_identity(&self) -> anyhow::Result<Option<&IdentityConfig>> {
+        let matched: Vec<&IdentityConfig> = self
+            .identity
+            .iter()
+            .filter(|ic| Some(&ic.id) == self.current_identity.as_ref())
+            .collect();
+
+        if matched.len() > 1 {
+            return Err(anyhow!(
+                "Expected 1 current identity but found {}",
+                matched.len()
+            ));
+        }
+
+        Ok(matched.first().cloned())
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -28,6 +45,13 @@ pub struct IdentityConfig {
     pub email: Option<String>,
     pub match_url: Option<String>,
     pub description: Option<String>,
+    pub credentials: Option<Vec<CredentialConfig>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CredentialConfig {
+    pub service: String,
+    pub token: String,
 }
 
 impl IdentityConfig {
@@ -44,6 +68,19 @@ impl IdentityConfig {
                 }
             }
             None => false,
+        }
+    }
+
+    pub fn get_token(&self, service: &str) -> anyhow::Result<Option<String>> {
+        if let Some(creds) = &self.credentials {
+            let matched: Vec<&CredentialConfig> = creds.iter().filter(|cc| cc.service == service).collect();
+            match matched.len() {
+                0 => Ok(None),
+                1 => Ok(matched.first().map(|cc| cc.token.clone())),
+                _ => Err(anyhow!(""))
+            }
+        } else {
+            Ok(None)
         }
     }
 }
@@ -109,10 +146,18 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
         current_identity: None,
         identity: vec![],
     };
-    let content = toml::to_string(&new_config)
-        .with_context(|| format!("Failed to create default config file content - {:?}", config_path))?;
-    f.write_all(content.as_bytes())
-        .with_context(|| format!("Failed to write default content to new config file - {:?}", config_path))?;
+    let content = toml::to_string(&new_config).with_context(|| {
+        format!(
+            "Failed to create default config file content - {:?}",
+            config_path
+        )
+    })?;
+    f.write_all(content.as_bytes()).with_context(|| {
+        format!(
+            "Failed to write default content to new config file - {:?}",
+            config_path
+        )
+    })?;
 
     Ok(())
 }
