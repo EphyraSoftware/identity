@@ -26,7 +26,7 @@ pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Resul
 
         write_url_info(&mut credentials_command_stdin, origin_url)?;
     } else if let Some(mut match_url) = identity_config.match_url.clone() {
-        if match_url.ends_with("*") {
+        if match_url.ends_with('*') {
             match_url.pop();
         }
 
@@ -39,7 +39,7 @@ pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Resul
     };
 
     // Final newline as end-of-input to the credentials helper
-    credentials_command_stdin.write(&['\n' as u8])?;
+    credentials_command_stdin.write_all(&[b'\n'])?;
 
     let output = String::from_utf8(credentials_command.wait_with_output()?.stdout)?;
     for line in output.split('\n') {
