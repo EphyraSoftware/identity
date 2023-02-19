@@ -1,3 +1,4 @@
+use crate::config::LazyConfig;
 use crate::git::common::get_credentials_helper;
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::get_pre_commit_hook_path;
@@ -7,7 +8,7 @@ use std::fs::File;
 use std::io::Read;
 use std::process::Command;
 
-pub fn run_git_check() -> anyhow::Result<()> {
+pub fn run_git_check(config: &mut LazyConfig) -> anyhow::Result<()> {
     let git_version = check_git().with_context(|| "Git not found")?;
 
     let git_version_okay =
@@ -22,9 +23,17 @@ pub fn run_git_check() -> anyhow::Result<()> {
 
     check_hook_content()?;
 
-    run_git_pre_commit_hook()?;
+    check_credentials(config)?;
+
+    run_git_pre_commit_hook(config)?;
 
     println!("Everything looks good!");
+
+    Ok(())
+}
+
+fn check_credentials(config: &mut LazyConfig) -> anyhow::Result<()> {
+    config.required()?;
 
     Ok(())
 }

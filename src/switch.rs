@@ -1,4 +1,4 @@
-use crate::config::{load_config, update_config, IdentityConfig};
+use crate::config::{IdentityConfig, LazyConfig};
 use clap::{ArgMatches, Command};
 use inquire::Select;
 use std::fmt::{Display, Formatter};
@@ -7,13 +7,13 @@ pub fn configure_command() -> Command {
     Command::new("switch")
 }
 
-pub fn run_switch(_: &ArgMatches) -> anyhow::Result<()> {
-    let cfg = load_config()?;
+pub fn run_switch(config: &mut LazyConfig, _: &ArgMatches) -> anyhow::Result<()> {
+    config.required()?;
 
-    let selector = Select::new("Select identity", cfg.identity);
+    let selector = Select::new("Select identity", config.identity.clone());
     let identity = selector.prompt()?;
 
-    update_config(move |mut cfg| {
+    config.update(move |mut cfg| {
         cfg.current_identity = Some(identity.id.clone());
         Ok(cfg)
     })?;

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs::{create_dir, File};
 use std::io::{Read, Write};
+use std::ops::Deref;
 use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,7 +39,7 @@ impl Config {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IdentityConfig {
     pub id: String,
     pub user: String,
@@ -48,7 +49,7 @@ pub struct IdentityConfig {
     pub credentials: Option<Vec<CredentialConfig>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CredentialConfig {
     pub service: String,
     pub token: String,
@@ -73,11 +74,12 @@ impl IdentityConfig {
 
     pub fn get_token(&self, service: &str) -> anyhow::Result<Option<String>> {
         if let Some(creds) = &self.credentials {
-            let matched: Vec<&CredentialConfig> = creds.iter().filter(|cc| cc.service == service).collect();
+            let matched: Vec<&CredentialConfig> =
+                creds.iter().filter(|cc| cc.service == service).collect();
             match matched.len() {
                 0 => Ok(None),
                 1 => Ok(matched.first().map(|cc| cc.token.clone())),
-                _ => Err(anyhow!(""))
+                _ => Err(anyhow!("")),
             }
         } else {
             Ok(None)
@@ -85,7 +87,42 @@ impl IdentityConfig {
     }
 }
 
-pub fn load_config() -> anyhow::Result<Config> {
+pub struct LazyConfig {
+    config: Option<Config>,
+}
+
+impl LazyConfig {
+    pub fn new() -> Self {
+        LazyConfig { config: None }
+    }
+
+    pub fn required(&mut self) -> anyhow::Result<()> {
+        if self.config.is_none() {
+            self.config = Some(load_config()?)
+        }
+
+        Ok(())
+    }
+
+    pub fn update<F>(&mut self, change: F) -> anyhow::Result<()>
+    where
+        F: Fn(Config) -> anyhow::Result<Config>,
+    {
+        self.config = Some(update_config(change)?);
+
+        Ok(())
+    }
+}
+
+impl Deref for LazyConfig {
+    type Target = Config;
+
+    fn deref(&self) -> &Self::Target {
+        self.config.as_ref().unwrap()
+    }
+}
+
+fn load_config() -> anyhow::Result<Config> {
     let config_path = get_config_path()?;
 
     let mut f = File::open(&config_path)
@@ -96,7 +133,7 @@ pub fn load_config() -> anyhow::Result<Config> {
     toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")
 }
 
-pub fn update_config<F>(change: F) -> anyhow::Result<Config>
+fn update_config<F>(change: F) -> anyhow::Result<Config>
 where
     F: Fn(Config) -> anyhow::Result<Config>,
 {
@@ -162,9 +199,11 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn verify_config(cfg: &Config) -> anyhow::Result<()> {
-    let unique_ids: HashSet<&str> = cfg.identity.iter().map(|ic| ic.id.as_str()).collect();
-    if unique_ids.len() != cfg.identity.len() {
+pub fn verify_config(config: &mut LazyConfig) -> anyhow::Result<()> {
+    config.required()?;
+
+    let unique_ids: HashSet<&str> = config.identity.iter().map(|ic| ic.id.as_str()).collect();
+    if unique_ids.len() != config.identity.len() {
         return Err(anyhow!("Identities must have a unique id"));
     }
 

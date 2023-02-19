@@ -1,7 +1,7 @@
 use crate::config::IdentityConfig;
 use crate::git::common::{get_credentials_helper, get_origin_url};
 use anyhow::{anyhow, Context};
-use std::io::{BufReader, Write};
+use std::io::Write;
 use std::process::{ChildStdin, Command, Stdio};
 use url::Url;
 
@@ -47,7 +47,7 @@ pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Resul
         if Some("password") == parts.first().cloned() {
             return Ok(parts.last().unwrap().to_string());
         }
-    };
+    }
 
     Err(anyhow!("No password found"))
 }

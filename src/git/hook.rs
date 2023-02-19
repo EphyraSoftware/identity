@@ -1,9 +1,9 @@
-use crate::config::load_config;
+use crate::config::LazyConfig;
 use crate::git::common::get_origin_url;
 use std::process::{exit, Command};
 
-pub fn run_git_pre_commit_hook() -> anyhow::Result<()> {
-    let config = load_config()?;
+pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
+    config.required()?;
 
     let username = String::from_utf8(
         Command::new("git")
