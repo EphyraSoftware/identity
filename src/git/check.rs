@@ -1,5 +1,5 @@
 use crate::config::LazyConfig;
-use crate::git::common::get_credentials_helper;
+use crate::git::common::{get_credentials_helper, get_origin_url};
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::get_pre_commit_hook_path;
 use anyhow::{anyhow, Context};
@@ -7,6 +7,7 @@ use regex::Regex;
 use std::fs::File;
 use std::io::Read;
 use std::process::Command;
+use crate::git::credentials::get_current_credential;
 
 pub fn run_git_check(config: &mut LazyConfig) -> anyhow::Result<()> {
     let git_version = check_git().with_context(|| "Git not found")?;
@@ -34,6 +35,19 @@ pub fn run_git_check(config: &mut LazyConfig) -> anyhow::Result<()> {
 
 fn check_credentials(config: &mut LazyConfig) -> anyhow::Result<()> {
     config.required()?;
+
+    let origin = get_origin_url()?;
+    let identity = config.identity_for_url(origin.as_str())?;
+
+    let token = identity.get_token("git")?;
+
+    if let Some(configured_token) = token {
+        let actual_token = get_current_credential(identity)?;
+
+        if configured_token != actual_token {
+            return Err(anyhow!("The token in your identity.toml does not match the token Git is configured to use"));
+        }
+    }
 
     Ok(())
 }

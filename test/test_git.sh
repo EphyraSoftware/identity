@@ -33,6 +33,17 @@ id = "duplicator2"
 user = "duplicator2"
 email = "duplicator2@example.com"
 match_url = "https://github.com/duplicator/*"
+
+[[identity]]
+id = "bad-credentials"
+user = "bad-credentials"
+email = "bad-credentials@example.com"
+match_url = "https://github.com/bad-credentials/*"
+
+[[identity.credential]]
+service = "git"
+token = "the-wrong-token"
+
 END
 
 git config --global init.defaultBranch main
@@ -281,13 +292,64 @@ echo -e "\033[34;40;3m- Reject duplicate matched identities\033[0m"
 set +e
 identity git --check &> output.txt
 check_result=$?
-grep -qe "Multiple candidate identities" output.txt
+grep -qe "Multiple identities found for URL" output.txt
 content_check_result=$?
 set -e
 
 if [[ $check_result -ne 1 ]]; then
   cat output.txt
   echo -e "\033[91;40mWrong exit code, wanted 1 but got $check_result\033[0m"
+  exit 1
+fi
+
+if [[ $content_check_result -ne 0 ]]; then
+  cat output.txt
+  echo -e "\033[91;40mWrong content\033[0m"
+  exit 1
+fi
+
+cd ..
+git init --quiet credentials_project && cd credentials_project || exit
+git config user.name "bad-credentials"
+git config user.email "bad-credentials@example.com"
+git remote add origin https://github.com/bad-credentials/credentials_project.git
+identity git --install > /dev/null
+
+echo -e "protocol=https\nhost=github.com\nusername=bad-credentials\npassword=the-right-token\n\n" | git credential approve
+
+echo -e "\033[34;40;3m- Reject mismatched credentials\033[0m"
+set +e
+identity git --check &> output.txt
+check_result=$?
+grep -qe "The token in your identity.toml does not match the token Git is configured to use" output.txt
+content_check_result=$?
+set -e
+
+if [[ $check_result -ne 1 ]]; then
+  cat output.txt
+  echo -e "\033[91;40mWrong exit code, wanted 1 but got $check_result\033[0m"
+  exit 1
+fi
+
+if [[ $content_check_result -ne 0 ]]; then
+  cat output.txt
+  echo -e "\033[91;40mWrong content\033[0m"
+  exit 1
+fi
+
+sed -i 's/the-wrong-token/the-right-token/' ~/.config/identity.toml
+
+echo -e "\033[34;40;3m- Accepts correct credentials\033[0m"
+set +e
+identity git --check &> output.txt
+check_result=$?
+grep -qe "Everything looks good!" output.txt
+content_check_result=$?
+set -e
+
+if [[ $check_result -ne 0 ]]; then
+  cat output.txt
+  echo -e "\033[91;40mWrong exit code, wanted 0 but got $check_result\033[0m"
   exit 1
 fi
 

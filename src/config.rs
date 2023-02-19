@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
 use std::fs::{create_dir, File};
 use std::io::{Read, Write};
 use std::ops::Deref;
@@ -14,11 +15,17 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn identities_for_url(&self, url: &str) -> Vec<&IdentityConfig> {
-        self.identity
+    pub fn identity_for_url(&self, url: &str) -> anyhow::Result<&IdentityConfig> {
+        let candidate_identities: Vec<&IdentityConfig> = self.identity
             .iter()
             .filter(|ic| ic.matches_url(url))
-            .collect()
+            .collect();
+
+        match candidate_identities.len() {
+            0 => Err(anyhow!("No identity found for URL - {}", url)),
+            1 => Ok(candidate_identities.first().unwrap()),
+            _ => Err(anyhow!("Multiple identities found for URL - {:?}", candidate_identities))
+        }
     }
 
     pub fn get_current_identity(&self) -> anyhow::Result<Option<&IdentityConfig>> {
@@ -46,7 +53,7 @@ pub struct IdentityConfig {
     pub email: Option<String>,
     pub match_url: Option<String>,
     pub description: Option<String>,
-    pub credentials: Option<Vec<CredentialConfig>>,
+    pub credential: Option<Vec<CredentialConfig>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -73,7 +80,7 @@ impl IdentityConfig {
     }
 
     pub fn get_token(&self, service: &str) -> anyhow::Result<Option<String>> {
-        if let Some(creds) = &self.credentials {
+        if let Some(creds) = &self.credential {
             let matched: Vec<&CredentialConfig> =
                 creds.iter().filter(|cc| cc.service == service).collect();
             match matched.len() {
@@ -208,4 +215,19 @@ pub fn verify_config(config: &mut LazyConfig) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+impl Display for IdentityConfig {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}, [user={}, email={}, desc={}]",
+            self.id,
+            self.user,
+            self.email.as_ref().unwrap_or(&"no email".to_string()),
+            self.description
+                .as_ref()
+                .unwrap_or(&"no description".to_string())
+        )
+    }
 }

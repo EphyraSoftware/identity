@@ -25,13 +25,7 @@ pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
 
     let origin = get_origin_url()?;
 
-    let candidate_identities = config.identities_for_url(origin.as_str());
-    if candidate_identities.len() != 1 {
-        eprintln!("Multiple candidate identities - {:?}", candidate_identities);
-        exit(1);
-    }
-
-    let identity = candidate_identities.first().unwrap();
+    let identity = config.identity_for_url(origin.as_str())?;
     if identity.user != username {
         eprintln!(
             "Username mismatch - expected={} != actual={}",
