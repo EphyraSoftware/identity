@@ -38,7 +38,10 @@ pub fn run_switch(config: &mut LazyConfig, arg_matches: &ArgMatches) -> anyhow::
             if let Some(id) = identity {
                 cargo::switch_profile(config, id)?
             } else {
-                return Err(anyhow!("Selected identity does not have a {} account", service))
+                return Err(anyhow!(
+                    "Selected identity does not have a {} account",
+                    service
+                ));
             }
         }
         service => return Err(anyhow!("Unknown service {}", service)),
@@ -65,7 +68,10 @@ fn prompt_for_service() -> anyhow::Result<String> {
     Ok(selector.prompt()?.to_string())
 }
 
-fn get_or_prompt_for_target_identity(config: &mut LazyConfig, arg_matches: &ArgMatches) -> anyhow::Result<IdentityConfig> {
+fn get_or_prompt_for_target_identity(
+    config: &mut LazyConfig,
+    arg_matches: &ArgMatches,
+) -> anyhow::Result<IdentityConfig> {
     let target_identity = arg_matches
         .get_one::<IdentityConfig>("identity")
         .cloned()

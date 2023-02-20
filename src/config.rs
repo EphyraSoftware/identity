@@ -1,3 +1,4 @@
+use crate::identity::Identity;
 use anyhow::{anyhow, Context};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -6,7 +7,6 @@ use std::fs::{create_dir, File};
 use std::io::{Read, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
-use crate::identity::Identity;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -20,7 +20,11 @@ impl Config {
             .identity
             .iter()
             .flat_map(|ic| {
-                let inner: Vec<Identity> = ic.accounts_for_url(service, url).iter().map(|ac| Identity::from(ic, ac)).collect();
+                let inner: Vec<Identity> = ic
+                    .accounts_for_url(service, url)
+                    .iter()
+                    .map(|ac| Identity::from(ic, ac))
+                    .collect();
                 inner
             })
             .collect();
@@ -46,12 +50,17 @@ pub struct IdentityConfig {
 impl IdentityConfig {
     pub fn identity_for_service(&self, service: &str) -> anyhow::Result<Option<Identity>> {
         if let Some(account) = &self.account {
-            let accounts: Vec<&AccountConfig> = account.iter().filter(|ac| ac.service == service).collect();
+            let accounts: Vec<&AccountConfig> =
+                account.iter().filter(|ac| ac.service == service).collect();
 
             match accounts.len() {
                 0 => Ok(None),
                 1 => Ok(Some(Identity::from(self, accounts.first().unwrap()))),
-                _ => Err(anyhow!("No account for service {} in identity {}", service, self))
+                _ => Err(anyhow!(
+                    "No account for service {} in identity {}",
+                    service,
+                    self
+                )),
             }
         } else {
             Ok(None)
@@ -60,7 +69,10 @@ impl IdentityConfig {
 
     fn accounts_for_url(&self, service: &str, url: &str) -> Vec<&AccountConfig> {
         if let Some(account) = &self.account {
-            account.iter().filter(|a| a.service == service && a.account_matches_url(url)).collect()
+            account
+                .iter()
+                .filter(|a| a.service == service && a.account_matches_url(url))
+                .collect()
         } else {
             vec![]
         }
@@ -218,6 +230,11 @@ pub fn verify_config(config: &mut LazyConfig) -> anyhow::Result<()> {
 
 impl Display for IdentityConfig {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} - {}", self.id, self.email.as_ref().unwrap_or(&"No email".to_string()))
+        write!(
+            f,
+            "{} - {}",
+            self.id,
+            self.email.as_ref().unwrap_or(&"No email".to_string())
+        )
     }
 }

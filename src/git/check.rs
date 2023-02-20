@@ -3,12 +3,12 @@ use crate::git::common::{get_credentials_helper, get_origin_url};
 use crate::git::credentials::get_current_credential;
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::get_pre_commit_hook_path;
+use crate::git::GIT_SERVICE;
 use anyhow::{anyhow, Context};
 use regex::Regex;
 use std::fs::File;
 use std::io::Read;
 use std::process::Command;
-use crate::git::GIT_SERVICE;
 
 pub fn run_git_check(config: &mut LazyConfig) -> anyhow::Result<()> {
     let git_version = check_git().with_context(|| "Git not found")?;

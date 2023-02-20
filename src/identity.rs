@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use crate::config::{AccountConfig, IdentityConfig};
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
 pub struct Identity<'a> {
@@ -7,9 +7,12 @@ pub struct Identity<'a> {
     account_config: &'a AccountConfig,
 }
 
-impl <'a> Identity<'a> {
+impl<'a> Identity<'a> {
     pub fn from(identity_config: &'a IdentityConfig, account_config: &'a AccountConfig) -> Self {
-        Identity { identity_config, account_config }
+        Identity {
+            identity_config,
+            account_config,
+        }
     }
 
     pub fn id(&self) -> &str {
@@ -37,7 +40,7 @@ impl <'a> Identity<'a> {
     }
 }
 
-impl <'a> Display for Identity<'a> {
+impl<'a> Display for Identity<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -45,8 +48,7 @@ impl <'a> Display for Identity<'a> {
             self.id(),
             self.user(),
             self.email().unwrap_or(&"no email".to_string()),
-            self.description()
-                .unwrap_or(&"no description".to_string())
+            self.description().unwrap_or(&"no description".to_string())
         )
     }
 }

@@ -7,8 +7,8 @@ mod git;
 
 mod cli;
 mod config;
-mod switch;
 mod identity;
+mod switch;
 
 fn main() -> anyhow::Result<()> {
     let mut config = LazyConfig::new();

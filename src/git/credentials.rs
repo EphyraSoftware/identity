@@ -1,9 +1,9 @@
 use crate::git::common::{get_credentials_helper, get_origin_url};
+use crate::identity::Identity;
 use anyhow::{anyhow, Context};
 use std::io::Write;
 use std::process::{ChildStdin, Command, Stdio};
 use url::Url;
-use crate::identity::Identity;
 
 pub fn get_current_credential(identity: &Identity) -> anyhow::Result<String> {
     if get_credentials_helper()?.is_empty() {

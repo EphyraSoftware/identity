@@ -1,7 +1,7 @@
 use crate::config::LazyConfig;
 use crate::git::common::get_origin_url;
-use std::process::{exit, Command};
 use crate::git::GIT_SERVICE;
+use std::process::{exit, Command};
 
 pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     config.required()?;
@@ -30,7 +30,8 @@ pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     if identity.user() != username {
         eprintln!(
             "Username mismatch - expected={} != actual={}",
-            identity.user(), username
+            identity.user(),
+            username
         );
         exit(1);
     }
