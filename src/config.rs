@@ -6,64 +6,78 @@ use std::fs::{create_dir, File};
 use std::io::{Read, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
+use crate::identity::Identity;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub version: String,
-    pub current_identity: Option<String>,
     pub identity: Vec<IdentityConfig>,
 }
 
 impl Config {
-    pub fn identity_for_url(&self, url: &str) -> anyhow::Result<&IdentityConfig> {
-        let candidate_identities: Vec<&IdentityConfig> = self.identity
+    pub fn account_for_url(&self, service: &str, url: &str) -> anyhow::Result<Identity> {
+        let candidate_identities: Vec<Identity> = self
+            .identity
             .iter()
-            .filter(|ic| ic.matches_url(url))
+            .flat_map(|ic| {
+                let inner: Vec<Identity> = ic.accounts_for_url(service, url).iter().map(|ac| Identity::from(ic, ac)).collect();
+                inner
+            })
             .collect();
 
         match candidate_identities.len() {
             0 => Err(anyhow!("No identity found for URL - {}", url)),
-            1 => Ok(candidate_identities.first().unwrap()),
-            _ => Err(anyhow!("Multiple identities found for URL - {:?}", candidate_identities))
+            1 => Ok(candidate_identities.first().unwrap().clone()),
+            _ => Err(anyhow!(
+                "Multiple identities found for URL - {:?}",
+                candidate_identities
+            )),
         }
-    }
-
-    pub fn get_current_identity(&self) -> anyhow::Result<Option<&IdentityConfig>> {
-        let matched: Vec<&IdentityConfig> = self
-            .identity
-            .iter()
-            .filter(|ic| Some(&ic.id) == self.current_identity.as_ref())
-            .collect();
-
-        if matched.len() > 1 {
-            return Err(anyhow!(
-                "Expected 1 current identity but found {}",
-                matched.len()
-            ));
-        }
-
-        Ok(matched.first().cloned())
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IdentityConfig {
     pub id: String,
-    pub user: String,
     pub email: Option<String>,
-    pub match_url: Option<String>,
-    pub description: Option<String>,
-    pub credential: Option<Vec<CredentialConfig>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct CredentialConfig {
-    pub service: String,
-    pub token: String,
+    pub account: Option<Vec<AccountConfig>>,
 }
 
 impl IdentityConfig {
-    pub fn matches_url(&self, url: &str) -> bool {
+    pub fn identity_for_service(&self, service: &str) -> anyhow::Result<Option<Identity>> {
+        if let Some(account) = &self.account {
+            let accounts: Vec<&AccountConfig> = account.iter().filter(|ac| ac.service == service).collect();
+
+            match accounts.len() {
+                0 => Ok(None),
+                1 => Ok(Some(Identity::from(self, accounts.first().unwrap()))),
+                _ => Err(anyhow!("No account for service {} in identity {}", service, self))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn accounts_for_url(&self, service: &str, url: &str) -> Vec<&AccountConfig> {
+        if let Some(account) = &self.account {
+            account.iter().filter(|a| a.service == service && a.account_matches_url(url)).collect()
+        } else {
+            vec![]
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AccountConfig {
+    pub service: String,
+    pub user: String,
+    pub match_url: Option<String>,
+    pub description: Option<String>,
+    pub token: Option<String>,
+}
+
+impl AccountConfig {
+    fn account_matches_url(&self, url: &str) -> bool {
         match &self.match_url {
             Some(match_url) => {
                 if match_url.ends_with('*') {
@@ -76,20 +90,6 @@ impl IdentityConfig {
                 }
             }
             None => false,
-        }
-    }
-
-    pub fn get_token(&self, service: &str) -> anyhow::Result<Option<String>> {
-        if let Some(creds) = &self.credential {
-            let matched: Vec<&CredentialConfig> =
-                creds.iter().filter(|cc| cc.service == service).collect();
-            match matched.len() {
-                0 => Ok(None),
-                1 => Ok(matched.first().map(|cc| cc.token.clone())),
-                _ => Err(anyhow!("")),
-            }
-        } else {
-            Ok(None)
         }
     }
 }
@@ -187,7 +187,6 @@ fn create_default_config(config_path: &PathBuf) -> anyhow::Result<()> {
         .with_context(|| format!("Failed to open config at - {:?}", config_path))?;
     let new_config = Config {
         version: "1.0".to_string(),
-        current_identity: None,
         identity: vec![],
     };
     let content = toml::to_string(&new_config).with_context(|| {
@@ -219,15 +218,6 @@ pub fn verify_config(config: &mut LazyConfig) -> anyhow::Result<()> {
 
 impl Display for IdentityConfig {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}, [user={}, email={}, desc={}]",
-            self.id,
-            self.user,
-            self.email.as_ref().unwrap_or(&"no email".to_string()),
-            self.description
-                .as_ref()
-                .unwrap_or(&"no description".to_string())
-        )
+        write!(f, "{} - {}", self.id, self.email.as_ref().unwrap_or(&"No email".to_string()))
     }
 }

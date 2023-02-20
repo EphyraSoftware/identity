@@ -1,6 +1,7 @@
 use crate::config::LazyConfig;
 use crate::git::common::get_origin_url;
 use std::process::{exit, Command};
+use crate::git::GIT_SERVICE;
 
 pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     config.required()?;
@@ -25,19 +26,19 @@ pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
 
     let origin = get_origin_url()?;
 
-    let identity = config.identity_for_url(origin.as_str())?;
-    if identity.user != username {
+    let identity = config.account_for_url(GIT_SERVICE, origin.as_str())?;
+    if identity.user() != username {
         eprintln!(
             "Username mismatch - expected={} != actual={}",
-            identity.user, username
+            identity.user(), username
         );
         exit(1);
     }
 
-    if identity.email.as_ref() != Some(&email) {
+    if identity.email() != Some(&email) {
         eprintln!(
             "Email mismatch - expected={} != actual={}",
-            identity.email.as_ref().unwrap_or(&"missing".to_string()),
+            identity.email().unwrap_or(&"missing".to_string()),
             email
         );
         exit(1);

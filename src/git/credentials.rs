@@ -1,11 +1,11 @@
-use crate::config::IdentityConfig;
 use crate::git::common::{get_credentials_helper, get_origin_url};
 use anyhow::{anyhow, Context};
 use std::io::Write;
 use std::process::{ChildStdin, Command, Stdio};
 use url::Url;
+use crate::identity::Identity;
 
-pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Result<String> {
+pub fn get_current_credential(identity: &Identity) -> anyhow::Result<String> {
     if get_credentials_helper()?.is_empty() {
         return Err(anyhow!("No credentials helper configured"));
     }
@@ -18,23 +18,23 @@ pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Resul
         .with_context(|| "Failed to start Git credentials helper")?;
     let mut credentials_command_stdin = credentials_command.stdin.as_ref().unwrap();
 
-    credentials_command_stdin.write_fmt(format_args!("username={}\n", identity_config.user))?;
+    credentials_command_stdin.write_fmt(format_args!("username={}\n", identity.user()))?;
 
     let origin_url = get_origin_url()?;
     if !origin_url.is_empty() {
         credentials_command_stdin.write_fmt(format_args!("url={}\n", origin_url))?;
 
-        write_url_info(&mut credentials_command_stdin, origin_url)?;
-    } else if let Some(mut match_url) = identity_config.match_url.clone() {
+        write_url_info(&mut credentials_command_stdin, origin_url.as_str())?;
+    } else if let Some(mut match_url) = identity.match_url().cloned() {
         if match_url.ends_with('*') {
             match_url.pop();
         }
 
-        write_url_info(&mut credentials_command_stdin, match_url)?;
+        write_url_info(&mut credentials_command_stdin, match_url.as_str())?;
     } else {
         return Err(anyhow!(
             "Not in a Git repository and no Match url configured for identity - {}",
-            identity_config
+            identity
         ));
     };
 
@@ -54,9 +54,9 @@ pub fn get_current_credential(identity_config: &IdentityConfig) -> anyhow::Resul
 
 fn write_url_info(
     credentials_command_stdin: &mut &ChildStdin,
-    input_url: String,
+    input_url: &str,
 ) -> anyhow::Result<()> {
-    let input_url_parsed = Url::parse(input_url.as_str())?;
+    let input_url_parsed = Url::parse(input_url)?;
     credentials_command_stdin
         .write_fmt(format_args!("protocol={}\n", input_url_parsed.scheme()))?;
     if let Some(h) = input_url_parsed.host_str() {

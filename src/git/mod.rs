@@ -6,3 +6,5 @@ mod common;
 mod credentials;
 mod hook;
 mod install;
+
+pub const GIT_SERVICE: &str = "git";

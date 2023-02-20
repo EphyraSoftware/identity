@@ -2,11 +2,13 @@ use crate::config::{verify_config, LazyConfig};
 use crate::git::run::run_git;
 use crate::switch::run_switch;
 
+mod cargo;
 mod git;
 
 mod cli;
 mod config;
 mod switch;
+mod identity;
 
 fn main() -> anyhow::Result<()> {
     let mut config = LazyConfig::new();
