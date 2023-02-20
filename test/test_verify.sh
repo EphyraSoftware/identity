@@ -54,11 +54,11 @@ version = "1.0"
 
 [[identity]]
 id = "tester"
-user = "tester"
+email = "tester@example.com"
 
 [[identity]]
 id = "tester"
-user = "tester"
+email = "tester@example.com"
 END
 
 echo -e "\033[34;40;3m- Rejects duplicate ids\033[0m"

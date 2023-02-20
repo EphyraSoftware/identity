@@ -12,36 +12,48 @@ version = "1.0"
 
 [[identity]]
 id = "tester"
-user = "tester"
 email = "tester@example.com"
+
+[[identity.account]]
+service = "git"
+user = "tester"
 match_url = "https://github.com/tester/*"
 
 [[identity]]
 id = "tinkerer"
-user = "tinkerer"
 email = "tinkerer@example.com"
+
+[[identity.account]]
+service = "git"
+user = "tinkerer"
 match_url = "https://github.com/tinkerer/*"
 
 [[identity]]
 id = "duplicator1"
-user = "duplicator1"
 email = "duplicator1@example.com"
+
+[[identity.account]]
+service = "git"
+user = "duplicator1"
 match_url = "https://github.com/duplicator/*"
 
 [[identity]]
 id = "duplicator2"
-user = "duplicator2"
 email = "duplicator2@example.com"
+
+[[identity.account]]
+service = "git"
+user = "duplicator2"
 match_url = "https://github.com/duplicator/*"
 
 [[identity]]
 id = "bad-credentials"
-user = "bad-credentials"
 email = "bad-credentials@example.com"
-match_url = "https://github.com/bad-credentials/*"
 
-[[identity.credential]]
+[[identity.account]]
 service = "git"
+user = "bad-credentials"
+match_url = "https://github.com/bad-credentials/*"
 token = "the-wrong-token"
 
 END

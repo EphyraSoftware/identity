@@ -11,9 +11,9 @@ COPY Cargo.lock ./
 
 RUN cargo build
 
-COPY ./test/ .
-
 COPY ./src/ ./src/
 RUN cargo install --path .
+
+COPY ./test/ .
 
 ENTRYPOINT [ "./entry.sh" ]
