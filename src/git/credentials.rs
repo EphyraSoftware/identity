@@ -20,7 +20,7 @@ pub fn get_current_credential(identity: &Identity) -> anyhow::Result<String> {
 
     let user = identity.user();
     if user.is_none() {
-        return Err(anyhow!("Missing username for identity {}", identity))
+        return Err(anyhow!("Missing username for identity {}", identity));
     }
     credentials_command_stdin.write_fmt(format_args!("username={}\n", user.unwrap()))?;
 

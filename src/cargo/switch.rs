@@ -5,7 +5,7 @@ use crate::identity::Identity;
 use anyhow::anyhow;
 use inquire::Confirm;
 
-pub fn switch_profile(config: &mut LazyConfig, identity: Identity) -> anyhow::Result<()> {
+pub fn run_switch(config: &mut LazyConfig, identity: Identity) -> anyhow::Result<()> {
     let configured_token = identity.token();
 
     if configured_token.is_none() {

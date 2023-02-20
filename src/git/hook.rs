@@ -1,28 +1,14 @@
 use crate::config::LazyConfig;
-use crate::git::common::get_origin_url;
+use crate::git::common::{get_email, get_origin_url, get_username};
 use crate::git::GIT_SERVICE;
 use std::process::{exit, Command};
 
 pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     config.required()?;
 
-    let username = String::from_utf8(
-        Command::new("git")
-            .args(["config", "user.name"])
-            .output()?
-            .stdout,
-    )?
-    .trim_end()
-    .to_string();
+    let username = get_username()?;
 
-    let email = String::from_utf8(
-        Command::new("git")
-            .args(["config", "user.email"])
-            .output()?
-            .stdout,
-    )?
-    .trim_end()
-    .to_string();
+    let email = get_email()?;
 
     let origin = get_origin_url()?;
 
