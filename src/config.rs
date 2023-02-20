@@ -125,6 +125,7 @@ impl LazyConfig {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn update<F>(&mut self, change: F) -> anyhow::Result<()>
     where
         F: Fn(Config) -> anyhow::Result<Config>,
@@ -154,6 +155,7 @@ fn load_config() -> anyhow::Result<Config> {
     toml::from_str::<Config>(&content).with_context(|| "Invalid config file content")
 }
 
+#[allow(dead_code)]
 fn update_config<F>(change: F) -> anyhow::Result<Config>
 where
     F: Fn(Config) -> anyhow::Result<Config>,
