@@ -27,10 +27,10 @@ pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     let origin = get_origin_url()?;
 
     let identity = config.account_for_url(GIT_SERVICE, origin.as_str())?;
-    if identity.user() != username {
+    if identity.user() != Some(&username) {
         eprintln!(
             "Username mismatch - expected={} != actual={}",
-            identity.user(),
+            identity.user().unwrap_or(&"no username".to_string()),
             username
         );
         exit(1);

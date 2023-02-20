@@ -23,8 +23,8 @@ impl<'a> Identity<'a> {
         self.identity_config.email.as_ref()
     }
 
-    pub fn user(&self) -> &str {
-        self.account_config.user.as_str()
+    pub fn user(&self) -> Option<&String> {
+        self.account_config.user.as_ref().or_else(|| self.identity_config.user.as_ref())
     }
 
     pub fn match_url(&self) -> Option<&String> {
@@ -32,7 +32,7 @@ impl<'a> Identity<'a> {
     }
 
     pub fn description(&self) -> Option<&String> {
-        self.account_config.description.as_ref()
+        self.account_config.description.as_ref().or_else(|| self.identity_config.description.as_ref())
     }
 
     pub fn token(&self) -> Option<&String> {
@@ -46,7 +46,7 @@ impl<'a> Display for Identity<'a> {
             f,
             "{}, [user={}, email={}, desc={}]",
             self.id(),
-            self.user(),
+            self.user().unwrap_or(&"no username".to_string()),
             self.email().unwrap_or(&"no email".to_string()),
             self.description().unwrap_or(&"no description".to_string())
         )

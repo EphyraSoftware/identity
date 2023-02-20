@@ -18,7 +18,11 @@ pub fn get_current_credential(identity: &Identity) -> anyhow::Result<String> {
         .with_context(|| "Failed to start Git credentials helper")?;
     let mut credentials_command_stdin = credentials_command.stdin.as_ref().unwrap();
 
-    credentials_command_stdin.write_fmt(format_args!("username={}\n", identity.user()))?;
+    let user = identity.user();
+    if user.is_none() {
+        return Err(anyhow!("Missing username for identity {}", identity))
+    }
+    credentials_command_stdin.write_fmt(format_args!("username={}\n", user.unwrap()))?;
 
     let origin_url = get_origin_url()?;
     if !origin_url.is_empty() {

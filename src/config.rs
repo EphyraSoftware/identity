@@ -43,7 +43,9 @@ impl Config {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IdentityConfig {
     pub id: String,
+    pub user: Option<String>,
     pub email: Option<String>,
+    pub description: Option<String>,
     pub account: Option<Vec<AccountConfig>>,
 }
 
@@ -82,7 +84,7 @@ impl IdentityConfig {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AccountConfig {
     pub service: String,
-    pub user: String,
+    pub user: Option<String>,
     pub match_url: Option<String>,
     pub description: Option<String>,
     pub token: Option<String>,
