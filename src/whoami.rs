@@ -1,7 +1,7 @@
 use crate::cargo::CARGO_SERVICE;
 use crate::config::LazyConfig;
 use crate::git::GIT_SERVICE;
-use crate::input::{get_or_prompt_for_service, get_or_prompt_for_target_identity};
+use crate::input::get_or_prompt_for_service;
 use crate::{cargo, git};
 use anyhow::anyhow;
 use clap::{arg, ArgAction, ArgMatches, Command};
@@ -29,9 +29,7 @@ pub fn run_who_am_i(config: &mut LazyConfig, arg_matches: &ArgMatches) -> anyhow
 
     match service.as_str() {
         GIT_SERVICE => git::run_who_am_i()?,
-        CARGO_SERVICE => {
-            cargo::run_who_am_i(config)?
-        }
+        CARGO_SERVICE => cargo::run_who_am_i(config)?,
         service => return Err(anyhow!("Unknown service {}", service)),
     }
 

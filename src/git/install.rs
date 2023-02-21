@@ -8,7 +8,7 @@ use std::process::Command;
 use std::str::FromStr;
 
 const PRE_COMMIT_HOOK: &str = r#"#!/usr/bin/env bash
-identity git --pre-commit-hook
+identity git hook --pre-commit
 "#;
 
 pub fn run_git_install(force: bool) -> anyhow::Result<()> {

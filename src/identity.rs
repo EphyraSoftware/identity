@@ -27,7 +27,7 @@ impl<'a> Identity<'a> {
         self.account_config
             .user
             .as_ref()
-            .or_else(|| self.identity_config.user.as_ref())
+            .or(self.identity_config.user.as_ref())
     }
 
     pub fn match_url(&self) -> Option<&String> {
@@ -38,7 +38,7 @@ impl<'a> Identity<'a> {
         self.account_config
             .description
             .as_ref()
-            .or_else(|| self.identity_config.description.as_ref())
+            .or(self.identity_config.description.as_ref())
     }
 
     pub fn token(&self) -> Option<&String> {

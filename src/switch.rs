@@ -1,11 +1,10 @@
-use crate::config::{IdentityConfig, LazyConfig};
+use crate::config::LazyConfig;
 use crate::input::{get_or_prompt_for_service, get_or_prompt_for_target_identity};
 use crate::{cargo, git};
 use anyhow::anyhow;
 use cargo::CARGO_SERVICE;
 use clap::{arg, ArgAction, ArgMatches, Command};
 use git::GIT_SERVICE;
-use inquire::Select;
 
 pub fn configure_command() -> Command {
     Command::new("switch")

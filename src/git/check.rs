@@ -65,7 +65,7 @@ fn check_hook_content() -> anyhow::Result<()> {
             pre_commit_hook_path
         )
     })?;
-    if !content.contains("identity git --pre-commit-hook") {
+    if !content.contains("identity git hook --pre-commit") {
         return Err(anyhow!(
             "Pre-commit hook does not contain an identity check"
         ));

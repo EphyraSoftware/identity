@@ -135,7 +135,7 @@ fi
 
 echo -e "\033[34;40;3m- Will not overwrite existing pre-commit hook\033[0m"
 set +e
-identity git --install &> output.txt
+identity git install &> output.txt
 check_result=$?
 grep -qe "Pre-commit hook already exists, run with --force to overwrite" output.txt
 content_check_result=$?
@@ -155,7 +155,7 @@ fi
 
 echo -e "\033[34;40;3m- Force install pre-commit hook\033[0m"
 set +e
-identity git --install --force &> output.txt
+identity git install --force &> output.txt
 check_result=$?
 grep -qe "Hook installed at" output.txt
 content_check_result=$?
@@ -271,7 +271,7 @@ git init --quiet tinkerer_project && cd tinkerer_project || exit
 git config user.name "tinkerer"
 git config user.email "tinkerer@example.com"
 git remote add origin https://github.com/tinkerer/project.git
-identity git --install > /dev/null
+identity git install > /dev/null
 
 echo -e "\033[34;40;3m- Check alternate identity\033[0m"
 set +e
@@ -298,7 +298,7 @@ git init --quiet duplicator_project && cd duplicator_project || exit
 git config user.name "duplicator1"
 git config user.email "duplicator1@example.com"
 git remote add origin https://github.com/duplicator/project.git
-identity git --install > /dev/null
+identity git install > /dev/null
 
 echo -e "\033[34;40;3m- Reject duplicate matched identities\033[0m"
 set +e
@@ -325,7 +325,7 @@ git init --quiet credentials_project && cd credentials_project || exit
 git config user.name "bad-credentials"
 git config user.email "bad-credentials@example.com"
 git remote add origin https://github.com/bad-credentials/credentials_project.git
-identity git --install > /dev/null
+identity git install > /dev/null
 
 echo -e "protocol=https\nhost=github.com\nusername=bad-credentials\npassword=the-right-token\n\n" | git credential approve
 

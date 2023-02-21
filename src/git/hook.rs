@@ -1,7 +1,7 @@
 use crate::config::LazyConfig;
 use crate::git::common::{get_email, get_origin_url, get_username};
 use crate::git::GIT_SERVICE;
-use std::process::{exit, Command};
+use std::process::exit;
 
 pub fn run_git_pre_commit_hook(config: &mut LazyConfig) -> anyhow::Result<()> {
     config.required()?;
