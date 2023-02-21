@@ -1,5 +1,5 @@
 use crate::config::{verify_config, LazyConfig};
-use crate::git::run::run_git;
+use crate::git::run_git;
 use crate::switch::run_switch;
 use crate::whoami::run_who_am_i;
 

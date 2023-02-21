@@ -6,5 +6,5 @@ pub fn configure_cli() -> Command {
         .arg(arg!(--verify "Verify the content of the config file").action(ArgAction::SetTrue))
         .subcommand(switch::configure_command())
         .subcommand(whoami::configure_command())
-        .subcommand(git::cli::configure())
+        .subcommand(git::configure())
 }

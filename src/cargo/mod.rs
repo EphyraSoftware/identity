@@ -1,6 +1,5 @@
-pub mod switch;
-
 mod credentials;
+mod switch;
 mod whoami;
 
 pub use switch::run_switch;

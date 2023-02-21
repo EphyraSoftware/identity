@@ -7,8 +7,8 @@ pub fn get_credentials_helper() -> anyhow::Result<String> {
             .output()?
             .stdout,
     )?
-        .trim_end()
-        .to_string())
+    .trim_end()
+    .to_string())
 }
 
 pub fn get_origin_url() -> anyhow::Result<String> {
@@ -18,8 +18,8 @@ pub fn get_origin_url() -> anyhow::Result<String> {
             .output()?
             .stdout,
     )?
-        .trim_end()
-        .to_string())
+    .trim_end()
+    .to_string())
 }
 
 pub fn get_username() -> anyhow::Result<String> {
@@ -29,8 +29,8 @@ pub fn get_username() -> anyhow::Result<String> {
             .output()?
             .stdout,
     )?
-        .trim_end()
-        .to_string())
+    .trim_end()
+    .to_string())
 }
 
 pub fn get_email() -> anyhow::Result<String> {
@@ -40,6 +40,6 @@ pub fn get_email() -> anyhow::Result<String> {
             .output()?
             .stdout,
     )?
-        .trim_end()
-        .to_string())
+    .trim_end()
+    .to_string())
 }
