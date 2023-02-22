@@ -28,8 +28,12 @@ pub fn get_or_prompt_for_target_identity(
     arg_matches: &ArgMatches,
 ) -> anyhow::Result<IdentityConfig> {
     let target_identity = arg_matches
-        .get_one::<IdentityConfig>("identity")
-        .cloned()
+        .get_one::<String>("identity")
+        .map(|id| {
+            let identity_configs: Vec<&IdentityConfig> = config.identity.iter().filter(|i| i.id.as_str() == id.as_str()).collect();
+            identity_configs.first().cloned().cloned()
+        })
+        .unwrap_or(None)
         .or_else(|| prompt_for_target_identity(config).map_or_else(|_| None, Some));
 
     if let Some(t) = target_identity {
