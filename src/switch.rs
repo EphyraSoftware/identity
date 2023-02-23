@@ -8,6 +8,7 @@ use git::GIT_SERVICE;
 
 pub fn configure_command() -> Command {
     Command::new("switch")
+        .about("Switch identity")
         .arg(
             arg!(-s --service "The service to switch profile for")
                 .action(ArgAction::Set)

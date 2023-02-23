@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
         Some(("switch", sub_matches)) => run_switch(&mut config, sub_matches),
         Some(("whoami", sub_matches)) => run_who_am_i(&mut config, sub_matches),
         _ => {
-            println!("Unknown command");
+            cli::configure_cli().print_help()?;
             Ok(())
         }
     }

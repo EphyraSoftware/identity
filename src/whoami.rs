@@ -8,6 +8,7 @@ use clap::{arg, ArgAction, ArgMatches, Command};
 
 pub fn configure_command() -> Command {
     Command::new("whoami")
+        .about("Determine and display the current identity")
         .arg(
             arg!(-s --service "The service to check")
                 .action(ArgAction::Set)

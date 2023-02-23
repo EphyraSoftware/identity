@@ -9,8 +9,11 @@ pub fn configure() -> Command {
                 .arg(arg!(--force "Force the operation to proceed").action(ArgAction::SetTrue)),
         )
         .subcommand(
-            Command::new("hook").arg(
-                arg!(--"pre-commit" "Behave as a Git pre-commit hook").action(ArgAction::SetTrue),
-            ),
+            Command::new("hook")
+                .arg(
+                    arg!(--"pre-commit" "Behave as a Git pre-commit hook")
+                        .action(ArgAction::SetTrue),
+                )
+                .arg_required_else_help(true),
         )
 }

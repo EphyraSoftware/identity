@@ -1,5 +1,6 @@
 use crate::config::LazyConfig;
 use crate::git::check::run_git_check;
+use crate::git::cli;
 use crate::git::hook::run_git_pre_commit_hook;
 use crate::git::install::run_git_install;
 use anyhow::anyhow;
@@ -19,6 +20,9 @@ pub fn run_git(config: &mut LazyConfig, arg_matches: &ArgMatches) -> anyhow::Res
                 Err(anyhow!("Only `--pre-commit` is supported"))
             }
         }
-        Some(_) | None => Err(anyhow!("Unknown subcommand")),
+        Some(_) | None => {
+            cli::configure().print_help()?;
+            Ok(())
+        }
     }
 }
