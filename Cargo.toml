@@ -2,6 +2,11 @@
 name = "identity-cli"
 version = "0.1.0"
 edition = "2021"
+license = "GPL-3.0"
+description = "A tool for managing your identity from the command line"
+homepage = "https://github.com/EphyraSoftware/identity"
+repository = "https://github.com/EphyraSoftware/identity"
+readme = "README.md"
 
 [[bin]]
 name = "identity"
