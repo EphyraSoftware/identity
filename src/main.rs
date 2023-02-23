@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use crate::config::{verify_config, LazyConfig};
 use crate::git::run_git;
 use crate::switch::run_switch;
