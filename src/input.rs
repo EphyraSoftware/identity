@@ -3,7 +3,7 @@ use crate::config::{IdentityConfig, LazyConfig};
 use crate::git::GIT_SERVICE;
 use anyhow::anyhow;
 use clap::ArgMatches;
-use inquire::Select;
+use inquire::{Select, Confirm};
 
 pub fn get_or_prompt_for_service(arg_matches: &ArgMatches) -> anyhow::Result<String> {
     let service = arg_matches
@@ -45,6 +45,11 @@ pub fn get_or_prompt_for_target_identity(
     } else {
         Err(anyhow!("Please specify an identity"))
     }
+}
+
+pub fn prompt_confirm(message: &str) -> anyhow::Result<bool> {
+    let confirm = Confirm::new(message);
+    Ok(confirm.prompt()?)
 }
 
 fn prompt_for_target_identity(config: &mut LazyConfig) -> anyhow::Result<IdentityConfig> {

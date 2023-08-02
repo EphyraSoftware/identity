@@ -1,7 +1,7 @@
 use crate::config::LazyConfig;
-use crate::input::{get_or_prompt_for_service, get_or_prompt_for_target_identity};
+use crate::input::{get_or_prompt_for_service, get_or_prompt_for_target_identity, prompt_confirm};
 use crate::{cargo, git};
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use cargo::CARGO_SERVICE;
 use clap::{arg, ArgAction, ArgMatches, Command};
 use git::GIT_SERVICE;
@@ -30,7 +30,17 @@ pub fn run_switch(config: &mut LazyConfig, arg_matches: &ArgMatches) -> anyhow::
 
     match service.as_str() {
         GIT_SERVICE => {
-            return Err(anyhow!("Profile switching is not supported for Git, use Git commands to change your settings"));
+            let matched_identity = git::prepare_switch(config).context("Could not find an identity to switch to based on the origin of this git repository")?;
+
+            let confirm = prompt_confirm(format!("Selected identity `{}` based on the git origin, apply? (y/n)", matched_identity.id()).as_str())?;
+            if confirm {
+                git::apply_switch(matched_identity)?;
+                println!("Applied successfully, running `whoami` to verify");
+
+                git::run_who_am_i()?;
+            } else {
+                println!("Okay, stopping without making changes");
+            }
         }
         CARGO_SERVICE => {
             let identity_config = get_or_prompt_for_target_identity(config, arg_matches)?;

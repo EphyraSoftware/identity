@@ -8,7 +8,7 @@ use anyhow::{anyhow, Context};
 use regex::Regex;
 use std::fs::File;
 use std::io::Read;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 pub fn run_git_check(config: &mut LazyConfig) -> anyhow::Result<()> {
     let git_version = check_git().with_context(|| "Git not found")?;
@@ -89,4 +89,18 @@ fn check_git_version(version: &str) -> anyhow::Result<bool> {
     } else {
         Ok(false)
     }
+}
+
+pub fn check_is_git_repository() -> anyhow::Result<()> {
+    let code = Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?.wait()?;
+
+    if !code.success() {
+        return Err(anyhow!("Not in a Git repository"));
+    }
+
+    Ok(())
 }
