@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Context};
-use std::fs::{File, Permissions};
+use std::fs::File;
+#[cfg(target_family = "unix")]
+use std::fs::Permissions;
 use std::io::Write;
 #[cfg(target_family = "unix")]
 use std::os::unix::fs::PermissionsExt;
